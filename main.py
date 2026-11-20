@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 IMAGE_NAME = "entry.png"
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
 
 def output_folder():
@@ -28,8 +29,12 @@ def place_image():
     if not source.is_file():
         sys.stderr.write(f"entry image is missing: {source}\n")
         return 1
+    payload = source.read_bytes()
+    if not payload.startswith(PNG_SIGNATURE):
+        sys.stderr.write(f"entry image is not a PNG: {source}\n")
+        return 1
     target = output_folder() / IMAGE_NAME
-    target.write_bytes(source.read_bytes())
+    target.write_bytes(payload)
     print(f"placed {IMAGE_NAME} at {target} "
           f"({source.stat().st_size} bytes)")
     return 0
